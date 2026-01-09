@@ -1,3 +1,4 @@
+import type { EventDispatcher } from 'three'
 import { untrack } from 'svelte'
 import type { MaybeInstance } from '../fn/types.js'
 import { useThrelte } from './useThrelte.svelte.js'
@@ -17,11 +18,13 @@ export const useProps = <Type>(
 		return untrack(() => {
 			for (const rawKey in _props) {
 				$effect.pre(() => {
-					const value = _props[rawKey]
 					let key = rawKey
 					let obj = _object
 
-					if (key.includes('.')) {
+					const value = _props[rawKey]
+					const isPierced = key.includes('.')
+
+					if (isPierced) {
 						const path = key.split('.')
 
 						while (path.length > 1) {
@@ -39,6 +42,24 @@ export const useProps = <Type>(
 
 					const prop = _object[key]
 
+					/**
+					 * If we can determine that this is an event listener prop,
+					 * attach it.
+					 */
+					if (
+						typeof value === 'function' &&
+						key.startsWith('on') &&
+						!isPierced &&
+						'addEventListener' in (_object as EventDispatcher)
+					) {
+						const dispatcher = _object as EventDispatcher
+						dispatcher.addEventListener(key.slice(2), value)
+
+						return () => {
+							dispatcher.removeEventListener(key.slice(2), value)
+						}
+					}
+
 					if (typeof prop === 'object') {
 						if (Array.isArray(value) && 'fromArray' in prop) {
 							prop.fromArray(value)
@@ -47,17 +68,26 @@ export const useProps = <Type>(
 						} else if (typeof value === 'number' && 'setScalar' in prop) {
 							prop.setScalar(value)
 						}
-					} else if (typeof prop === 'function') {
+
+						invalidate()
+						return
+					}
+
+					if (typeof prop === 'function') {
 						if (Array.isArray(value)) {
 							prop.call(_object, ...value)
 						} else {
 							prop.call(_object, value)
 						}
-					} else {
-						obj[key] = value
+
+						invalidate()
+						return
 					}
 
-					invalidate()
+					{
+						obj[key] = value
+						invalidate()
+					}
 				})
 			}
 		})

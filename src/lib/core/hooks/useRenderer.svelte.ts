@@ -1,10 +1,11 @@
 import { getContext, setContext } from 'svelte'
-import { WebGLRenderer } from 'three'
-import { useTask } from './useTask.svelte.js'
-import { useCamera } from './useCamera.svelte.js'
-import { useScene } from './useScene'
-
-const browser = typeof window !== 'undefined'
+import {
+	type ShadowMapType,
+	type ToneMapping,
+	AgXToneMapping,
+	PCFSoftShadowMap,
+	WebGLRenderer,
+} from 'three'
 
 const key = Symbol('renderer-context')
 
@@ -13,10 +14,16 @@ type RenderMode = 'always' | 'on-demand' | 'manual'
 export interface RendererContext {
 	renderer: WebGLRenderer
 
+	toneMapping: { current: ToneMapping }
+	shadows: { current: false | ShadowMapType }
+	dpr: { current: number }
+
 	/**
 	 * A flag to indicate whether the current frame has been invalidated
 	 */
-	invalidated: boolean
+	invalidated: {
+		current: boolean
+	}
 
 	/**
 	 * If anything is in this set, the frame will be considered invalidated
@@ -53,23 +60,39 @@ export interface RendererContext {
 	}
 }
 
-export const providerRenderer = (userRenderer?: WebGLRenderer) => {
-	const scene = useScene()
-	const camera = useCamera()
+export const providerRenderer = (props: {
+	renderer: () => WebGLRenderer
+	autoRender?: () => boolean
+	renderMode?: () => RenderMode
+	toneMapping?: () => ToneMapping
+	shadows?: () => ShadowMapType | false
+	dpr?: () => number
+}) => {
+	let renderer = $derived(props.renderer())
+	let autoRender = $derived(props.autoRender?.() ?? true)
+	let renderMode = $derived<RenderMode>(props.renderMode?.() ?? 'on-demand')
+	let toneMapping = $derived<ToneMapping>(props.toneMapping?.() ?? AgXToneMapping)
+	let shadows = $derived<ShadowMapType | false>(props.shadows?.() ?? PCFSoftShadowMap)
+	let dpr = $derived<number>(props.dpr?.() ?? window.devicePixelRatio)
 
-	let autoRender = $state(true)
-	let renderMode = $state<RenderMode>('on-demand')
 	let invalidated = true
 	const autoInvalidations = new Set()
 
-	const renderer = browser
-		? (userRenderer ??
-			new WebGLRenderer({
-				powerPreference: 'high-performance',
-				antialias: true,
-				alpha: true,
-			}))
-		: undefined!
+	$effect.pre(() => {
+		renderer.toneMapping = toneMapping
+	})
+
+	$effect.pre(() => {
+		renderer.shadowMap.enabled = shadows !== false
+
+		if (shadows !== false) {
+			renderer.shadowMap.type = shadows
+		}
+	})
+
+	$effect.pre(() => {
+		renderer.setPixelRatio(dpr)
+	})
 
 	const shouldRender = () => {
 		if (renderMode === 'always') {
@@ -89,15 +112,32 @@ export const providerRenderer = (userRenderer?: WebGLRenderer) => {
 
 	const context: RendererContext = {
 		renderer,
-		get invalidated() {
-			return invalidated
+
+		toneMapping: {
+			get current() {
+				return toneMapping
+			},
+			set current(value: ToneMapping) {
+				toneMapping = value
+			},
 		},
-		set invalidated(value: boolean) {
-			invalidated = value
+		shadows: {
+			get current() {
+				return shadows
+			},
+			set current(value: ShadowMapType | false) {
+				shadows = value
+			},
 		},
-		invalidate: () => {
-			invalidated = true
+		dpr: {
+			get current() {
+				return dpr
+			},
+			set current(value: number) {
+				dpr = value
+			},
 		},
+
 		shouldRender,
 		autoInvalidations,
 		autoRender: {
@@ -116,21 +156,18 @@ export const providerRenderer = (userRenderer?: WebGLRenderer) => {
 				renderMode = value
 			},
 		},
-	}
-
-	useTask(
-		() => {
-			if (shouldRender()) {
-				renderer.render(scene, camera.current)
-			}
-
-			invalidated = false
+		invalidated: {
+			get current() {
+				return invalidated
+			},
+			set current(value: boolean) {
+				invalidated = value
+			},
 		},
-		{
-			tag: 'render',
-			running: () => autoRender,
-		}
-	)
+		invalidate: () => {
+			invalidated = true
+		},
+	}
 
 	setContext(key, context)
 

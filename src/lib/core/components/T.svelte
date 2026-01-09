@@ -11,7 +11,7 @@
 	import { useProps } from '../hooks/useProps.svelte.js'
 	import { provideDispose, useDispose } from '../hooks/useDispose.svelte.js'
 	import { useManageCamera } from '../hooks/useCamera.svelte.js'
-	import { usePlugins } from '../hooks/plugin.svelte.js'
+	import { getPlugins, usePlugins } from '../hooks/plugin.svelte.js'
 	import { useScene } from '../hooks/useScene.js'
 
 	let {
@@ -32,29 +32,32 @@
 	const object = $derived(resolveIs<Type>(is, args))
 	const resolvedAttach = $derived(attach ?? parent?.current ?? scene)
 
-	const plugins = usePlugins({
-		get ref() {
-			return object
-		},
-		get args() {
-			return args
-		},
-		get attach() {
-			return attach
-		},
-		get manual() {
-			return manual
-		},
-		get makeDefault() {
-			return makeDefault
-		},
-		get dispose() {
-			return dispose
-		},
-		get props() {
-			return props
-		},
-	})
+	const plugins = getPlugins()
+	const pluginProps = plugins
+		? usePlugins({
+				get ref() {
+					return object
+				},
+				get args() {
+					return args
+				},
+				get attach() {
+					return attach
+				},
+				get manual() {
+					return manual
+				},
+				get makeDefault() {
+					return makeDefault
+				},
+				get dispose() {
+					return dispose
+				},
+				get props() {
+					return props
+				},
+			})
+		: undefined
 
 	useProps(
 		() => object,

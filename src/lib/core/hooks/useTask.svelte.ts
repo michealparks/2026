@@ -1,8 +1,19 @@
 import { Schedule, type Runnable, type SingleOptionsObject } from 'directed'
 import { useSchedule } from './useSchedule.svelte.js'
+import { useRenderer } from './useRenderer.svelte.js'
 
-interface UseTaskOptions {
+export interface UseTaskOptions {
+	/**
+	 * Sets the task to start or stop. Defaults to true.
+	 */
 	running?: () => boolean
+
+	/**
+	 * If false, the task handler will not automatically invalidate the task.
+	 * This is useful if you want to manually invalidate the task. Defaults to
+	 * true.
+	 */
+	autoInvalidate?: boolean
 }
 
 let buildQueued = false
@@ -23,6 +34,8 @@ export const useTask = (
 	options: UseTaskOptions & SingleOptionsObject = {}
 ) => {
 	const schedule = useSchedule()
+	const { autoInvalidations } = useRenderer()
+
 	const isRunning = $derived(options.running?.() ?? true)
 
 	if (!options.after && !options.before && !options.id && !options.tag) {
@@ -34,9 +47,17 @@ export const useTask = (
 			schedule.add(callback as Runnable, options)
 			queueBuild(schedule)
 
+			if (options.autoInvalidate ?? true) {
+				autoInvalidations.add(callback)
+			}
+
 			return () => {
 				schedule.remove(callback as Runnable)
 				queueBuild(schedule)
+
+				if (options.autoInvalidate ?? true) {
+					autoInvalidations.delete(callback)
+				}
 			}
 		}
 	})

@@ -49,6 +49,10 @@ export function injectPlugin<Props extends AnyProps = AnyProps>(
 	setContext<PluginContext>(key, context)
 }
 
+export const getPlugins = () => {
+	return getContext<PluginContext | undefined>(key)
+}
+
 export const usePlugins = (pluginArgs: Parameters<Plugin>[0]) => {
 	const plugins = getContext<PluginContext | undefined>(key)
 

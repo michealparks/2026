@@ -10,13 +10,15 @@
 	} from 'three'
 	import { resizeRendererToDisplaySize } from './fn/resize.js'
 	import { provideThrelte } from './hooks/useThrelte.svelte.js'
-	import { useCamera } from './hooks/useCamera.svelte.js'
+	import { useTask } from './hooks/useTask.svelte.js'
+	import { managedCameras } from './hooks/useCamera.svelte.js'
 
 	interface Props {
 		dpr?: number
 		toneMapping?: ToneMapping
 		shadows?: false | ShadowMapType
 		autoRender?: boolean
+		renderMode?: 'always' | 'on-demand' | 'manual'
 		renderer?: WebGLRenderer
 		cache?: boolean
 		children: Snippet
@@ -29,6 +31,7 @@
 		toneMapping,
 		shadows = PCFSoftShadowMap,
 		autoRender: autoRenderProp = true,
+		renderMode = 'on-demand',
 		renderer: userRenderer,
 		cache = true,
 		children,
@@ -37,36 +40,43 @@
 	const canvasSize = $state({ width: 0, height: 0 })
 	const domSize = { width: 0, height: 0 }
 
-	const { schedule, renderer, autoRender, invalidate } = provideThrelte({
-		renderer: () => userRenderer,
+	const renderer = $derived(
+		userRenderer ??
+			new WebGLRenderer({
+				powerPreference: 'high-performance',
+				antialias: true,
+				alpha: true,
+			})
+	)
+
+	const { scene, camera, invalidated, schedule, autoRender, shouldRender } = provideThrelte({
+		renderer: () => renderer,
 		dom: () => dom!,
 		size: () => canvasSize,
+		autoRender: () => autoRender,
+		renderMode: () => renderMode,
+		dpr: () => dpr,
+		toneMapping: () => toneMapping,
+		shadows: () => shadows,
 	})
-	const { managedCameras } = useCamera()
 
 	$effect.pre(() => {
 		Cache.enabled = cache
 	})
 
-	$effect.pre(() => {
-		autoRender.current = autoRenderProp
-	})
+	useTask(
+		() => {
+			if (shouldRender()) {
+				renderer.render(scene, camera.current)
+			}
 
-	$effect.pre(() => {
-		renderer.setPixelRatio(dpr ?? window.devicePixelRatio)
-	})
-
-	$effect.pre(() => {
-		renderer.toneMapping = toneMapping ?? AgXToneMapping
-	})
-
-	$effect.pre(() => {
-		renderer.shadowMap.enabled = shadows !== false
-
-		if (shadows !== false) {
-			renderer.shadowMap.type = shadows
+			invalidated.current = false
+		},
+		{
+			tag: 'render',
+			running: () => autoRender,
 		}
-	})
+	)
 </script>
 
 <div
@@ -100,7 +110,9 @@
 
 			const changed = resizeRendererToDisplaySize(domSize, canvasSize, renderer, managedCameras)
 
-			if (changed) invalidate()
+			if (changed) {
+				invalidated.current = true
+			}
 
 			schedule.run(dt)
 		})

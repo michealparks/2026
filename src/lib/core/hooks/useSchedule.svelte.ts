@@ -4,11 +4,15 @@ import { getContext, setContext } from 'svelte'
 const key = Symbol('scheduler-context')
 
 export const provideScheduler = () => {
-	const schedule = new Schedule()
-	schedule.createTag('render')
-	schedule.createTag('main', { after: 'render' })
+	let schedule = useSchedule()
 
-	setContext(key, schedule)
+	if (!schedule) {
+		schedule = new Schedule()
+		schedule.createTag('render')
+		schedule.createTag('main', { after: 'render' })
+
+		setContext(key, schedule)
+	}
 
 	return schedule
 }

@@ -13,7 +13,7 @@ export { type Plugin, injectPlugin } from './hooks/plugin.svelte.js'
 // hooks
 export { useThrelte } from './hooks/useThrelte.svelte.js'
 export { useParent } from './hooks/useParent.svelte.js'
-export { useTask } from './hooks/useTask.svelte.js'
+export { useTask, type UseTaskOptions } from './hooks/useTask.svelte.js'
 
 // useLoader
 export {
@@ -22,4 +22,13 @@ export {
 	type UseLoaderLoadInput,
 	type UseLoaderLoadResult,
 	type UseLoaderOptions,
-} from './hooks/useLoader.js'
+} from './hooks/useLoader.svelte.js'
+
+//contexts
+export { provideThrelte } from './hooks/useThrelte.svelte.js'
+
+// utils
+export { observe } from './fn/observe.svelte.js'
+export { isInstanceOf } from './fn/isInstanceOf.js'
+export { asyncState } from './fn/asyncState.js'
+export { revision } from './fn/revision.js'

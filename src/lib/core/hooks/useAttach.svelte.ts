@@ -10,7 +10,7 @@ export const useAttach = <Type>(
 		const _object = object()
 		const _attach = attach()
 
-		// Object3d
+		// If the object and attach target are both Object3Ds...
 		if ((_attach as Object3D).isObject3D && (_object as Object3D).isObject3D) {
 			const object3D = _attach as Object3D
 			object3D.add(_object as Object3D)
@@ -18,7 +18,7 @@ export const useAttach = <Type>(
 				object3D.remove(_object as Object3D)
 			}
 
-			// Geometry
+			// If the attach target is a Mesh and the object is a BufferGeometry...
 		} else if ((_attach as Mesh).isMesh && (_object as BufferGeometry).isBufferGeometry) {
 			const mesh = _attach as Mesh
 			const geometry = mesh.geometry
@@ -27,7 +27,7 @@ export const useAttach = <Type>(
 				mesh.geometry = geometry
 			}
 
-			// Material
+			// If the attach target is a Mesh and the object is a Material...
 		} else if ((_attach as Mesh).isMesh && (_object as Material).isMaterial) {
 			const mesh = _attach as Mesh
 			const material = mesh.material
@@ -36,11 +36,11 @@ export const useAttach = <Type>(
 				mesh.material = material
 			}
 
-			// No attach
+			// Explicitly do not attach...
 		} else if (_attach === false) {
 			return
 
-			// Prop
+			// If the attach target is a property key...
 		} else if (typeof _attach === 'string') {
 			const _parent = parent()
 			const prev = _parent[_attach]
@@ -49,7 +49,7 @@ export const useAttach = <Type>(
 				_parent[_attach] = prev
 			}
 
-			// Function
+			// If attach is a function...
 		} else if (typeof _attach === 'function') {
 			// Error
 		} else {

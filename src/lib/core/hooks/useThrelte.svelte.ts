@@ -1,8 +1,14 @@
 import { setContext, getContext } from 'svelte'
-import { OrthographicCamera, PerspectiveCamera, Scene, WebGLRenderer } from 'three'
+import {
+	OrthographicCamera,
+	PerspectiveCamera,
+	Scene,
+	WebGLRenderer,
+	type ToneMapping,
+	type ShadowMapType,
+} from 'three'
 import type { Schedule } from 'directed'
-import { updateCamera } from '../fn/updateCamera.js'
-import { providerRenderer, type RendererContext } from './useRenderer.svelte.js'
+import { providerRenderer, useRenderer, type RendererContext } from './useRenderer.svelte.js'
 import { provideCamera } from './useCamera.svelte.js'
 import { provideScheduler } from './useSchedule.svelte.js'
 import { provideScene } from './useScene.js'
@@ -11,23 +17,28 @@ import { provideDOM } from './useDOM.svelte.js'
 
 const key = Symbol('three-context')
 
-interface Context extends RendererContext {
-	dom: {
-		current: HTMLElement
-	}
+interface UseThrelteContext extends RendererContext {
 	scene: Scene
-	schedule: Schedule
 	camera: {
 		current: PerspectiveCamera | OrthographicCamera
 	}
+	dom: {
+		current: HTMLElement
+	}
+	schedule: Schedule
 	size: SizeContext
 	invalidate: () => void
 }
 
 interface Props {
-	renderer: () => WebGLRenderer | undefined
+	renderer: () => WebGLRenderer
 	dom: () => HTMLElement
 	size: () => Size
+	autoRender: () => boolean
+	renderMode: () => 'always' | 'on-demand' | 'manual'
+	dpr: () => number
+	toneMapping: () => ToneMapping
+	shadows: () => boolean | ShadowMapType
 }
 
 export const provideThrelte = (props: Props) => {
@@ -36,34 +47,22 @@ export const provideThrelte = (props: Props) => {
 	const scene = provideScene()
 	const camera = provideCamera()
 	const schedule = provideScheduler()
-	const renderer = providerRenderer(props.renderer())
+	const renderer = useRenderer() ?? providerRenderer(props)
 
-	const context: Context = {
+	const context: UseThrelteContext = {
 		...renderer,
 		dom,
 		size,
 		scene,
 		schedule,
-		camera: {
-			get current() {
-				return camera.current
-			},
-			set current(value: PerspectiveCamera | OrthographicCamera) {
-				camera.set(value)
-				updateCamera(
-					camera.current,
-					renderer.renderer.domElement.clientWidth,
-					renderer.renderer.domElement.clientHeight
-				)
-			},
-		},
+		camera,
 	}
 
-	setContext<Context>(key, context)
+	setContext<UseThrelteContext>(key, context)
 
 	return context
 }
 
 export const useThrelte = () => {
-	return getContext<Context>(key)
+	return getContext<UseThrelteContext>(key)
 }

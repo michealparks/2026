@@ -2,14 +2,13 @@ import { getContext, setContext } from 'svelte'
 import { OrthographicCamera, PerspectiveCamera } from 'three'
 import type { MaybeInstance } from '../fn/types.js'
 import { useSize } from './useSize.svelte.js'
+import { useDOM } from './useDOM.svelte.js'
 import { updateCamera } from '../fn/updateCamera.js'
 
 const key = Symbol('camera-context')
 
 interface CameraContext {
 	current: PerspectiveCamera | OrthographicCamera
-	managedCameras: Set<PerspectiveCamera | OrthographicCamera>
-	set(value?: PerspectiveCamera | OrthographicCamera | undefined): void
 }
 
 const defaultCameras = new Set()
@@ -17,19 +16,22 @@ const defaultCamera = new PerspectiveCamera(75, 0, 0.1, 1000)
 defaultCamera.position.z = 5
 defaultCamera.lookAt(0, 0, 0)
 
+export const managedCameras = new Set<PerspectiveCamera | OrthographicCamera>()
+managedCameras.add(defaultCamera)
+
 export const provideCamera = () => {
-	const managedCameras = new Set<PerspectiveCamera | OrthographicCamera>()
-	managedCameras.add(defaultCamera)
+	const dom = useDOM()
 
 	let camera = $state.raw<PerspectiveCamera | OrthographicCamera>(defaultCamera)
 
 	const context: CameraContext = {
-		managedCameras,
 		get current() {
 			return camera
 		},
-		set(value?: PerspectiveCamera | OrthographicCamera | undefined) {
+		set current(value: PerspectiveCamera | OrthographicCamera) {
 			camera = value ?? defaultCamera
+
+			updateCamera(camera, dom.current.clientWidth, dom.current.clientHeight)
 		},
 	}
 
@@ -66,24 +68,24 @@ export const useManageCamera = <Type>(
 
 		if (_makeDefault) {
 			defaultCameras.add(object)
-			camera.set(cam)
+			camera.current = cam
 		}
 
 		if (!_manual) {
 			updateCamera(cam, size.current.width, size.current.height)
-			camera.managedCameras.add(cam)
+			managedCameras.add(cam)
 		}
 
 		return () => {
 			if (_makeDefault) {
 				defaultCameras.delete(cam)
 				if (defaultCameras.size === 0) {
-					camera.set(defaultCamera)
+					camera.current = defaultCamera
 				}
 			}
 
 			if (!_manual) {
-				camera.managedCameras.delete(cam)
+				managedCameras.delete(cam)
 			}
 		}
 	})

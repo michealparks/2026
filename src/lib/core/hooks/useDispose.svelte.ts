@@ -1,7 +1,7 @@
 import { getContext, setContext } from 'svelte'
 import type { MaybeInstance } from '../fn/types.js'
 
-interface DisposableObject {
+type DisposableObject<Type> = MaybeInstance<Type> & {
 	dispose: () => void
 }
 
@@ -14,8 +14,10 @@ type ThrelteDisposeContext = () => boolean
  * @param object - The object to check.
  * @returns True if the object is a disposable object, false otherwise.
  */
-const isDisposableObject = (object: object): object is DisposableObject => {
-	return typeof (object as DisposableObject).dispose === 'function'
+const isDisposableObject = <Type>(
+	object: MaybeInstance<Type>
+): object is DisposableObject<Type> => {
+	return typeof (object as DisposableObject<Type>).dispose === 'function'
 }
 
 export const provideDispose = (dispose: () => boolean | undefined) => {
@@ -37,7 +39,7 @@ export const useDispose = <Type>(object: () => MaybeInstance<Type>) => {
 	// is not set, we use true as default.
 	const dispose = $derived(parentDispose?.() ?? true)
 
-	$effect.pre(() => {
+	$effect(() => {
 		if (!dispose) {
 			return
 		}
