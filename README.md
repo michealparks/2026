@@ -1,3 +1,5 @@
+This is an experimental prototype of a possible future version of Threlte.
+
 # Changes
 
 ## `useThrelte` 
