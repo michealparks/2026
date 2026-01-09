@@ -1,9 +1,9 @@
 import { getContext, setContext } from 'svelte'
 import { OrthographicCamera, PerspectiveCamera } from 'three'
-import type { MaybeInstance } from '../fn/types.js'
+import type { MaybeInstance } from '../util/types.js'
 import { useSize } from './useSize.svelte.js'
 import { useDOM } from './useDOM.svelte.js'
-import { updateCamera } from '../fn/updateCamera.js'
+import { updateCamera } from '../util/updateCamera.js'
 
 const key = Symbol('camera-context')
 

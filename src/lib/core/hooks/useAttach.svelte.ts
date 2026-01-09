@@ -1,5 +1,5 @@
 import type { Mesh, Object3D, BufferGeometry, Material } from 'three'
-import type { AttachFunction, MaybeInstance } from '../fn/types.js'
+import type { AttachFunction, MaybeInstance } from '../util/types.js'
 
 export const useAttach = <Type>(
 	object: () => MaybeInstance<Type>,

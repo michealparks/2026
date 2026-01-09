@@ -4,11 +4,11 @@
 		type ShadowMapType,
 		type ToneMapping,
 		Cache,
-		AgXToneMapping,
 		PCFSoftShadowMap,
 		WebGLRenderer,
+		AgXToneMapping,
 	} from 'three'
-	import { resizeRendererToDisplaySize } from './fn/resize.js'
+	import { resizeRendererToDisplaySize } from './util/resize.js'
 	import { provideThrelte } from './hooks/useThrelte.svelte.js'
 	import { useTask } from './hooks/useTask.svelte.js'
 	import { managedCameras } from './hooks/useCamera.svelte.js'
@@ -26,22 +26,13 @@
 
 	let dom = $state.raw<HTMLElement>()
 
-	let {
-		dpr,
-		toneMapping,
-		shadows = PCFSoftShadowMap,
-		autoRender: autoRenderProp = true,
-		renderMode = 'on-demand',
-		renderer: userRenderer,
-		cache = true,
-		children,
-	}: Props = $props()
+	let { children, ...props }: Props = $props()
 
 	const canvasSize = $state({ width: 0, height: 0 })
 	const domSize = { width: 0, height: 0 }
 
 	const renderer = $derived(
-		userRenderer ??
+		props.renderer ??
 			new WebGLRenderer({
 				powerPreference: 'high-performance',
 				antialias: true,
@@ -53,15 +44,15 @@
 		renderer: () => renderer,
 		dom: () => dom!,
 		size: () => canvasSize,
-		autoRender: () => autoRender,
-		renderMode: () => renderMode,
-		dpr: () => dpr,
-		toneMapping: () => toneMapping,
-		shadows: () => shadows,
+		autoRender: () => props.autoRender ?? true,
+		renderMode: () => props.renderMode ?? 'on-demand',
+		dpr: () => props.dpr ?? window.devicePixelRatio,
+		toneMapping: () => props.toneMapping ?? AgXToneMapping,
+		shadows: () => props.shadows ?? PCFSoftShadowMap,
 	})
 
 	$effect.pre(() => {
-		Cache.enabled = cache
+		Cache.enabled = props.cache ?? true
 	})
 
 	useTask(
@@ -74,7 +65,7 @@
 		},
 		{
 			tag: 'render',
-			running: () => autoRender,
+			running: () => autoRender.current,
 		}
 	)
 </script>
@@ -120,7 +111,9 @@
 		return () => {
 			domObserver.disconnect()
 			canvasObserver.disconnect()
+
 			renderer.setAnimationLoop(null)
+
 			renderer.domElement.remove()
 			renderer.dispose()
 		}

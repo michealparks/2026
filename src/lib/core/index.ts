@@ -5,7 +5,7 @@ export { default as Canvas } from './Canvas.svelte'
 
 // components
 export { T, extend } from './components/T.js'
-export type { Props } from './fn/types.js'
+export type { Props } from './util/types.js'
 
 // plugins
 export { type Plugin, injectPlugin } from './hooks/plugin.svelte.js'
@@ -28,7 +28,7 @@ export {
 export { provideThrelte } from './hooks/useThrelte.svelte.js'
 
 // utils
-export { observe } from './fn/observe.svelte.js'
-export { isInstanceOf } from './fn/isInstanceOf.js'
-export { asyncState } from './fn/asyncState.js'
-export { revision } from './fn/revision.js'
+export { observe } from './util/observe.svelte.js'
+export { isInstanceOf } from './util/isInstanceOf.js'
+export { asyncState } from './util/asyncState.js'
+export { revision } from './util/revision.js'

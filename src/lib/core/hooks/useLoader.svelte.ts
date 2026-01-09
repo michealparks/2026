@@ -1,4 +1,4 @@
-import { asyncState, type AsyncState } from '../fn/asyncState.js'
+import { asyncState, type AsyncState } from '../util/asyncState.js'
 
 interface AsyncLoader {
 	loadAsync: (url: string, onProgress?: (event: ProgressEvent) => void) => Promise<any>

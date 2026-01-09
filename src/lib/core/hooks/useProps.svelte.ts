@@ -1,6 +1,6 @@
 import type { EventDispatcher } from 'three'
 import { untrack } from 'svelte'
-import type { MaybeInstance } from '../fn/types.js'
+import type { MaybeInstance } from '../util/types.js'
 import { useThrelte } from './useThrelte.svelte.js'
 
 export const useProps = <Type>(

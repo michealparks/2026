@@ -3,8 +3,8 @@
 	generics="Type"
 >
 	import { untrack } from 'svelte'
-	import type { TProps } from '../fn/types.js'
-	import { resolveIs } from '../fn/resolveIs.js'
+	import type { TProps } from '../util/types.js'
+	import { resolveIs } from '../util/resolveIs.js'
 	import { useIs } from '../hooks/useIs.svelte.js'
 	import { provideParent, useParent } from '../hooks/useParent.svelte.js'
 	import { useAttach } from '../hooks/useAttach.svelte.js'
