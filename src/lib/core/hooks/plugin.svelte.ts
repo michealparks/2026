@@ -1,7 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 import { getContext, setContext } from 'svelte'
-
 import type { Object3D } from 'three'
 
 type BaseProps = {
@@ -20,7 +19,7 @@ type BaseProps = {
 
 type AnyProps = Record<string, any>
 
-type Plugin<Props extends AnyProps = AnyProps> = (
+export type Plugin<Props extends AnyProps = AnyProps> = (
 	args: BaseProps & {
 		props: Props & AnyProps
 	}

@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-empty-object-type */
 
-import type { Component } from 'svelte'
 import * as THREE from 'three'
+import type { Component } from 'svelte'
 import TComp from './T.svelte'
 import type { Props } from '../fn/types.js'
 import { setIs } from '../hooks/useIs.svelte.js'

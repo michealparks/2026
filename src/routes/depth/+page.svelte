@@ -1,5 +1,5 @@
 <script>
-	import { useTask, useThree } from '$lib/core'
+	import { useTask, useThrelte } from '$lib/core'
 	import { useHDR } from '$lib/extras'
 	import {
 		HalfFloatType,
@@ -30,7 +30,7 @@
 	import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js'
 	import { RenderPass } from 'three/addons/postprocessing/RenderPass.js'
 
-	const { scene, camera, renderer } = useThree()
+	const { scene, camera, renderer } = useThrelte()
 
 	useHDR('/hdr/rosendal_park_sunset_1k.hdr')
 

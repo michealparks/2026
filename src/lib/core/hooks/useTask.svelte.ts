@@ -1,5 +1,5 @@
 import { Schedule, type Runnable, type SingleOptionsObject } from 'directed'
-import { useSchedule } from './useSchedule.svelte'
+import { useSchedule } from './useSchedule.svelte.js'
 
 interface UseTaskOptions {
 	running?: () => boolean
@@ -33,11 +33,11 @@ export const useTask = (
 		if (isRunning) {
 			schedule.add(callback as Runnable, options)
 			queueBuild(schedule)
-		}
 
-		return () => {
-			schedule.remove(callback as Runnable)
-			queueBuild(schedule)
+			return () => {
+				schedule.remove(callback as Runnable)
+				queueBuild(schedule)
+			}
 		}
 	})
 }

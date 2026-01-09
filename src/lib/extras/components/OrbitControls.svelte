@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { T, useThree, useTask, type Props } from '$lib/core'
+	import { T, useThrelte, useTask, type Props } from '$lib/core'
 	import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
 	import type { Event } from 'three'
 
@@ -7,10 +7,10 @@
 
 	let { ref = $bindable(), children, ...props }: OrbitControlsProps = $props()
 
-	const { camera, renderer, invalidate, shouldRender } = useThree()
+	const { camera, invalidate, shouldRender, dom } = useThrelte()
 
 	// <HTML> sets canvas pointer-events to "none" if occluding, so events must be placed on the canvas parent.
-	const controls = new OrbitControls(camera.current, renderer.domElement)
+	const controls = new OrbitControls(camera.current, dom.current)
 
 	useTask(
 		() => {

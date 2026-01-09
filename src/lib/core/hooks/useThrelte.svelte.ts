@@ -1,16 +1,20 @@
 import { setContext, getContext } from 'svelte'
 import { OrthographicCamera, PerspectiveCamera, Scene, WebGLRenderer } from 'three'
-import { updateCamera } from '../fn/updateCamera'
-import { providerRenderer, type RendererContext } from './useRenderer.svelte'
-import { provideCamera } from './useCamera.svelte'
-import { provideScheduler } from './useSchedule.svelte'
-import { provideScene } from './useScene'
 import type { Schedule } from 'directed'
-import { type Size, type SizeContext, provideSize } from './useSize.svelte'
+import { updateCamera } from '../fn/updateCamera.js'
+import { providerRenderer, type RendererContext } from './useRenderer.svelte.js'
+import { provideCamera } from './useCamera.svelte.js'
+import { provideScheduler } from './useSchedule.svelte.js'
+import { provideScene } from './useScene.js'
+import { type Size, type SizeContext, provideSize } from './useSize.svelte.js'
+import { provideDOM } from './useDOM.svelte.js'
 
 const key = Symbol('three-context')
 
 interface Context extends RendererContext {
+	dom: {
+		current: HTMLElement
+	}
 	scene: Scene
 	schedule: Schedule
 	camera: {
@@ -20,15 +24,23 @@ interface Context extends RendererContext {
 	invalidate: () => void
 }
 
-export const provideThree = (getSize: () => Size, userRenderer?: WebGLRenderer) => {
-	const size = provideSize(getSize)
+interface Props {
+	renderer: () => WebGLRenderer | undefined
+	dom: () => HTMLElement
+	size: () => Size
+}
+
+export const provideThrelte = (props: Props) => {
+	const dom = provideDOM(props.dom)
+	const size = provideSize(props.size)
 	const scene = provideScene()
 	const camera = provideCamera()
 	const schedule = provideScheduler()
-	const renderer = providerRenderer(userRenderer)
+	const renderer = providerRenderer(props.renderer())
 
 	const context: Context = {
 		...renderer,
+		dom,
 		size,
 		scene,
 		schedule,
@@ -52,6 +64,6 @@ export const provideThree = (getSize: () => Size, userRenderer?: WebGLRenderer) 
 	return context
 }
 
-export const useThree = () => {
+export const useThrelte = () => {
 	return getContext<Context>(key)
 }

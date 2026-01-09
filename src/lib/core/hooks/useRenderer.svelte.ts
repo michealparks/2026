@@ -1,7 +1,7 @@
 import { getContext, setContext } from 'svelte'
 import { WebGLRenderer } from 'three'
-import { useTask } from './useTask.svelte'
-import { useCamera } from './useCamera.svelte'
+import { useTask } from './useTask.svelte.js'
+import { useCamera } from './useCamera.svelte.js'
 import { useScene } from './useScene'
 
 const browser = typeof window !== 'undefined'

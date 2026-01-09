@@ -1,11 +1,11 @@
 <script lang="ts">
-	import { T, useThree } from '$lib/core'
+	import { T, useThrelte } from '$lib/core'
 	import { DirectionalLight, PlaneGeometry, RGBADepthPacking, Mesh, FogExp2 } from 'three'
 	import { TerrainMaterial } from './material'
 	import { TerrainDepthMaterial } from './depth'
 	import { Pane } from 'tweakpane'
 
-	const { scene } = useThree()
+	const { scene } = useThrelte()
 
 	const SIZE = 250
 	const RESOLUTION = 1024

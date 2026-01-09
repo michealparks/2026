@@ -1,5 +1,5 @@
 import type { OrthographicCamera, PerspectiveCamera, WebGLRenderer } from 'three'
-import { updateCamera } from './updateCamera'
+import { updateCamera } from './updateCamera.js'
 
 interface Size {
 	width: number

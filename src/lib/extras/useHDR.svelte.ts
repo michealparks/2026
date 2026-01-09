@@ -1,11 +1,11 @@
-import { useThree } from '$lib/core/hooks/useThree.svelte'
+import { useThrelte } from '$lib/core'
 import { DataTexture, EquirectangularReflectionMapping } from 'three'
 import { HDRLoader } from 'three/examples/jsm/Addons.js'
 
 const loader = new HDRLoader()
 
 export const useHDR = (src: (() => string) | string) => {
-	const { scene } = useThree()
+	const { scene } = useThrelte()
 	let hdr = $state<DataTexture>()
 
 	$effect.pre(() => {

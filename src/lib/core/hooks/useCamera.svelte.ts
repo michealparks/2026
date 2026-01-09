@@ -1,9 +1,8 @@
-/* eslint-disable svelte/prefer-svelte-reactivity */
 import { getContext, setContext } from 'svelte'
 import { OrthographicCamera, PerspectiveCamera } from 'three'
-import type { MaybeInstance } from '../fn/types'
-import { useSize } from './useSize.svelte'
-import { updateCamera } from '../fn/updateCamera'
+import type { MaybeInstance } from '../fn/types.js'
+import { useSize } from './useSize.svelte.js'
+import { updateCamera } from '../fn/updateCamera.js'
 
 const key = Symbol('camera-context')
 

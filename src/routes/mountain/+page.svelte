@@ -1,12 +1,12 @@
 <script lang="ts">
-	import { T, useThree } from '$lib/core'
+	import { T, useThrelte } from '$lib/core'
 	import { OrbitControls } from '$lib/extras'
 	import { useHDR } from '$lib/extras/useHDR.svelte'
 	import Cube from './Cube.svelte'
 	import { shaderChunk } from './shaderChunk'
 	import Terrain from './Terrain/Terrain.svelte'
 
-	const { scene, camera } = useThree()
+	const { scene, camera } = useThrelte()
 
 	shaderChunk()
 

@@ -1,4 +1,4 @@
-import type { AnyClass, MaybeInstance } from './types'
+import type { AnyClass, MaybeInstance } from './types.js'
 
 const isClass = (input: unknown): input is AnyClass => {
 	return typeof input === 'function' && Function.prototype.toString.call(input).startsWith('class ')

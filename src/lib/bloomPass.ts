@@ -7,7 +7,7 @@ const VSH_GENERIC = `
 
 out vec2 vUvs;
 
-void main() {	
+void main() {
   gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
   vUvs = uv;
 }

@@ -1,5 +1,5 @@
 import { getContext, setContext } from 'svelte'
-import type { MaybeInstance } from '../fn/types'
+import type { MaybeInstance } from '../fn/types.js'
 
 interface DisposableObject {
 	dispose: () => void

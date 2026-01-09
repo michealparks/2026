@@ -1,5 +1,5 @@
 import { setContext, getContext } from 'svelte'
-import type { MaybeInstance } from '../fn/types'
+import type { MaybeInstance } from '../fn/types.js'
 
 const key = Symbol('parent-context')
 

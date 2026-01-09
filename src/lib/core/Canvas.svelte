@@ -1,16 +1,24 @@
 <script lang="ts">
-	import { provideThree } from './hooks/useThree.svelte'
-	import { useTask } from './hooks/useTask.svelte'
-	import { type Snippet } from 'svelte'
-	import { type ShadowMapType, type ToneMapping, AgXToneMapping, PCFSoftShadowMap } from 'three'
-	import { resizeRendererToDisplaySize } from './fn/resize'
-	import { useCamera } from './hooks/useCamera.svelte'
+	import type { Snippet } from 'svelte'
+	import {
+		type ShadowMapType,
+		type ToneMapping,
+		Cache,
+		AgXToneMapping,
+		PCFSoftShadowMap,
+		WebGLRenderer,
+	} from 'three'
+	import { resizeRendererToDisplaySize } from './fn/resize.js'
+	import { provideThrelte } from './hooks/useThrelte.svelte.js'
+	import { useCamera } from './hooks/useCamera.svelte.js'
 
 	interface Props {
 		dpr?: number
 		toneMapping?: ToneMapping
 		shadows?: false | ShadowMapType
 		autoRender?: boolean
+		renderer?: WebGLRenderer
+		cache?: boolean
 		children: Snippet
 	}
 
@@ -21,14 +29,24 @@
 		toneMapping,
 		shadows = PCFSoftShadowMap,
 		autoRender: autoRenderProp = true,
+		renderer: userRenderer,
+		cache = true,
 		children,
 	}: Props = $props()
 
 	const canvasSize = $state({ width: 0, height: 0 })
 	const domSize = { width: 0, height: 0 }
 
-	const { schedule, renderer, autoRender, invalidate } = provideThree(() => canvasSize)
+	const { schedule, renderer, autoRender, invalidate } = provideThrelte({
+		renderer: () => userRenderer,
+		dom: () => dom!,
+		size: () => canvasSize,
+	})
 	const { managedCameras } = useCamera()
+
+	$effect.pre(() => {
+		Cache.enabled = cache
+	})
 
 	$effect.pre(() => {
 		autoRender.current = autoRenderProp
@@ -96,7 +114,9 @@
 		}
 	}}
 >
-	{@render children?.()}
+	{#if dom}
+		{@render children?.()}
+	{/if}
 </div>
 
 <style>
