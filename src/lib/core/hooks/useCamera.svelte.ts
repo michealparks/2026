@@ -1,9 +1,20 @@
 import { getContext, setContext } from 'svelte'
 import { OrthographicCamera, PerspectiveCamera } from 'three'
-import type { MaybeInstance } from '../util/types.js'
 import { useSize } from './useSize.svelte.js'
 import { useDOM } from './useDOM.svelte.js'
 import { updateCamera } from '../util/updateCamera.js'
+
+const updateProjectionMatrixKeys = new Set([
+	'fov',
+	'aspect',
+	'near',
+	'far',
+	'left',
+	'right',
+	'top',
+	'bottom',
+	'zoom',
+])
 
 const key = Symbol('camera-context')
 
@@ -44,48 +55,50 @@ export const useCamera = () => {
 	return getContext<CameraContext>(key)
 }
 
-export const useManageCamera = <Type>(
-	object: () => MaybeInstance<Type>,
+export const useManageCamera = (
+	object: () => PerspectiveCamera | OrthographicCamera,
 	makeDefault: () => boolean | undefined,
-	manual: () => boolean | undefined
+	manual: () => boolean | undefined,
+	props: () => Record<string, unknown>
 ) => {
 	const size = useSize()
 	const camera = useCamera()
 
-	$effect.pre(() => {
-		const _object = object()
+	const _object = $derived(object())
+	const _manual = $derived(manual())
 
-		if (
-			(_object as PerspectiveCamera).isPerspectiveCamera !== true &&
-			(_object as OrthographicCamera).isOrthographicCamera !== true
-		) {
-			return
+	$effect(() => {
+		for (const key in props()) {
+			if (updateProjectionMatrixKeys.has(key)) {
+				_object.updateProjectionMatrix()
+				break
+			}
 		}
+	})
 
-		const cam = _object as PerspectiveCamera | OrthographicCamera
+	$effect.pre(() => {
 		const _makeDefault = makeDefault()
-		const _manual = manual()
 
 		if (_makeDefault) {
 			defaultCameras.add(object)
-			camera.current = cam
+			camera.current = _object
 		}
 
 		if (!_manual) {
-			updateCamera(cam, size.current.width, size.current.height)
-			managedCameras.add(cam)
+			updateCamera(_object, size.current.width, size.current.height)
+			managedCameras.add(_object)
 		}
 
 		return () => {
 			if (_makeDefault) {
-				defaultCameras.delete(cam)
+				defaultCameras.delete(_object)
 				if (defaultCameras.size === 0) {
 					camera.current = defaultCamera
 				}
 			}
 
 			if (!_manual) {
-				managedCameras.delete(cam)
+				managedCameras.delete(_object)
 			}
 		}
 	})

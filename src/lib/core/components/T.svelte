@@ -2,6 +2,7 @@
 	lang="ts"
 	generics="Type"
 >
+	import type { PerspectiveCamera, OrthographicCamera } from 'three'
 	import { untrack } from 'svelte'
 	import type { TProps } from '../util/types.js'
 	import { resolveIs } from '../util/resolveIs.js'
@@ -70,11 +71,19 @@
 		() => resolvedAttach
 	)
 
-	useManageCamera(
-		() => object,
-		() => makeDefault,
-		() => manual
-	)
+	$effect.pre(() => {
+		if (
+			(object as PerspectiveCamera).isPerspectiveCamera ||
+			(object as OrthographicCamera).isOrthographicCamera
+		) {
+			useManageCamera(
+				() => object as PerspectiveCamera | OrthographicCamera,
+				() => makeDefault,
+				() => manual,
+				() => props
+			)
+		}
+	})
 
 	provideParent(() => object)
 	provideDispose(() => dispose)

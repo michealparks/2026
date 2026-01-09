@@ -2,7 +2,7 @@ This is an experimental prototype of a possible future version of Threlte.
 
 The library itself can be found at [src/lib/core](https://github.com/michealparks/2026/tree/main/src/lib/core).
 
-The result of this experiment was discovering that there was a lot of possible downsizing, simplification, and redundancy removal. 
+The result of this experiment was discovering that there was a lot of possible downsizing, simplification, and redundancy removal.
 
 Also, a lot less work can still be done by the library while achieving the same results.
 
@@ -10,7 +10,7 @@ Finally, I think there are some areas where API ergonomics can be improved.
 
 # Changes
 
-## `useThrelte` 
+## `useThrelte`
 
 All Writables have been replaced with runes accessed by `.current` and modifiable by `.current = value`.
 
@@ -36,11 +36,11 @@ const {
 } = useThrelte()
 ```
 
-```colorManagementEnabled``` is removed. The THREE.js default is `true` now, and this can be easily set to `false` with `ColorManagement.enabled = false`.
+`colorManagementEnabled` is removed. The THREE.js default is `true` now, and this can be easily set to `false` with `ColorManagement.enabled = false`.
 
-```colorSpace``` is removed. The THREE.js default is `THREE.SRGBColorSpace` now, and this can be easily changed with `renderer.outputColorSpace`.
+`colorSpace` is removed. The THREE.js default is `THREE.SRGBColorSpace` now, and this can be easily changed with `renderer.outputColorSpace`.
 
-```advance``` is removed. If renderMode is set to 'manual', you can trigger a render by calling `invalidate()`. This removes duplication since advance and invalidate do very similar things.
+`advance` is removed. If renderMode is set to 'manual', you can trigger a render by calling `invalidate()`. This removes duplication since advance and invalidate do very similar things.
 
 ## `useCache`
 
@@ -53,12 +53,10 @@ THREE.Cache.enabled = true;
 It can be turned off in the canvas component.
 
 ```svelte
-<Canvas cache={false}>
- ...
-</Canvas>
+<Canvas cache={false}>...</Canvas>
 ```
 
-## `<Canvas>` 
+## `<Canvas>`
 
 The properties removed above have also been removed from the canvas component.
 
@@ -95,7 +93,7 @@ useLoader now returns an asyncState object.
 
 ## `useTask`
 
-useTask no longer returns a `start` or `stop` function, and the `autoStart` option is removed. 
+useTask no longer returns a `start` or `stop` function, and the `autoStart` option is removed.
 
 Instead, a `running` signal option can toggle the task.
 
@@ -103,7 +101,7 @@ Instead, a `running` signal option can toggle the task.
 let running = $state(false)
 
 useTask(() => {
-  // Do something... 
+  // Do something...
 }, {
   running: () => running
 })
@@ -123,11 +121,13 @@ Calling functions through props is now supported as well:
 
 ```svelte
 <T.PerspectiveCamera
-    makeDefault
-    position={[5, 5, 5]}
-    lookAt={[0, 1, 0]}
+	makeDefault
+	position={[5, 5, 5]}
+	lookAt={[0, 1, 0]}
 />
 ```
+
+Searching for camera props and updating projection matrices have been moved to the `useManagedCamera` hook, so that this is only done if an object is a camera.
 
 ### `useParentObject3d`
 

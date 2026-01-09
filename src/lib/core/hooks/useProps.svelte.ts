@@ -52,14 +52,15 @@ export const useProps = <Type>(
 						!isPierced &&
 						'addEventListener' in (_object as EventDispatcher)
 					) {
-						const dispatcher = _object as EventDispatcher
-						dispatcher.addEventListener(key.slice(2), value)
+						const dispatcher = _object as EventDispatcher<Record<string, any>>
+						const eventName = key.slice(2)
+						dispatcher.addEventListener(eventName, value)
 
 						return () => {
-							dispatcher.removeEventListener(key.slice(2), value)
+							dispatcher.removeEventListener(eventName, value)
 						}
 					}
-
+					0
 					if (typeof prop === 'object') {
 						if (Array.isArray(value) && 'fromArray' in prop) {
 							prop.fromArray(value)

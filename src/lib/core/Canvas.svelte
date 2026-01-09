@@ -73,6 +73,8 @@
 <div
 	bind:this={dom}
 	{@attach (ref) => {
+		const canvas = renderer.domElement
+
 		const canvasObserver = new ResizeObserver(([entry]) => {
 			const { width, height } = entry.contentRect
 			canvasSize.width = width
@@ -85,10 +87,10 @@
 			domSize.height = height
 		})
 
-		canvasObserver?.observe(renderer.domElement)
+		canvasObserver?.observe(canvas)
 		domObserver?.observe(ref)
 
-		ref.append(renderer.domElement)
+		ref.append(canvas)
 
 		domSize.width = ref.clientWidth
 		domSize.height = ref.clientHeight
@@ -114,7 +116,7 @@
 
 			renderer.setAnimationLoop(null)
 
-			renderer.domElement.remove()
+			canvas.remove()
 			renderer.dispose()
 		}
 	}}

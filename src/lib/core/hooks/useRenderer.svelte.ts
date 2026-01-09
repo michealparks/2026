@@ -68,7 +68,8 @@ export const providerRenderer = (props: {
 	shadows?: () => ShadowMapType | false
 	dpr?: () => number
 }) => {
-	let renderer = $derived(props.renderer())
+	const renderer = $derived(props.renderer())
+
 	let autoRender = $derived(props.autoRender?.() ?? true)
 	let renderMode = $derived<RenderMode>(props.renderMode?.() ?? 'on-demand')
 	let toneMapping = $derived<ToneMapping>(props.toneMapping?.() ?? AgXToneMapping)
