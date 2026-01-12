@@ -6,13 +6,14 @@ import {
 	PCFSoftShadowMap,
 	WebGLRenderer,
 } from 'three'
+import type { WebGPURenderer } from 'three/webgpu'
 
 const key = Symbol('renderer-context')
 
 type RenderMode = 'always' | 'on-demand' | 'manual'
 
-export interface RendererContext {
-	renderer: WebGLRenderer
+export interface RendererContext<Type extends WebGLRenderer | WebGPURenderer = WebGLRenderer> {
+	renderer: Type
 
 	toneMapping: { current: ToneMapping }
 	shadows: { current: false | ShadowMapType }
@@ -60,21 +61,14 @@ export interface RendererContext {
 	}
 }
 
-export const providerRenderer = (props: {
-	renderer: () => WebGLRenderer
-	autoRender?: () => boolean
-	renderMode?: () => RenderMode
-	toneMapping?: () => ToneMapping
-	shadows?: () => ShadowMapType | false
-	dpr?: () => number
-}) => {
-	const renderer = $derived(props.renderer())
-
-	let autoRender = $derived(props.autoRender?.() ?? true)
-	let renderMode = $derived<RenderMode>(props.renderMode?.() ?? 'on-demand')
-	let toneMapping = $derived<ToneMapping>(props.toneMapping?.() ?? AgXToneMapping)
-	let shadows = $derived<ShadowMapType | false>(props.shadows?.() ?? PCFSoftShadowMap)
-	let dpr = $derived<number>(props.dpr?.() ?? window.devicePixelRatio)
+export const providerRenderer = <Type extends WebGLRenderer | WebGPURenderer = WebGLRenderer>(
+	renderer: Type
+) => {
+	let autoRender = $state(true)
+	let renderMode = $state<RenderMode>('on-demand')
+	let toneMapping = $state<ToneMapping>(AgXToneMapping)
+	let shadows = $derived<ShadowMapType | false>(PCFSoftShadowMap)
+	let dpr = $derived<number>(window.devicePixelRatio)
 
 	let invalidated = true
 	const autoInvalidations = new Set()
@@ -92,6 +86,7 @@ export const providerRenderer = (props: {
 	})
 
 	$effect.pre(() => {
+		console.log(dpr)
 		renderer.setPixelRatio(dpr)
 	})
 
@@ -111,7 +106,7 @@ export const providerRenderer = (props: {
 		return false
 	}
 
-	const context: RendererContext = {
+	const context: RendererContext<Type> = {
 		renderer,
 
 		toneMapping: {

@@ -1,5 +1,5 @@
 import type { Mesh, Object3D, BufferGeometry, Material } from 'three'
-import type { AttachFunction, MaybeInstance } from '../util/types.js'
+import type { AttachFunction, MaybeInstance } from '../types.js'
 
 export const useAttach = <Type>(
 	object: () => MaybeInstance<Type>,
@@ -9,6 +9,7 @@ export const useAttach = <Type>(
 	$effect.pre(() => {
 		const _object = object()
 		const _attach = attach()
+		const _parent = parent()
 
 		// If the object and attach target are both Object3Ds...
 		if ((_attach as Object3D).isObject3D && (_object as Object3D).isObject3D) {
@@ -18,8 +19,8 @@ export const useAttach = <Type>(
 				object3D.remove(_object as Object3D)
 			}
 
-			// If the attach target is a Mesh and the object is a BufferGeometry...
-		} else if ((_attach as Mesh).isMesh && (_object as BufferGeometry).isBufferGeometry) {
+			// If the object is a BufferGeometry...
+		} else if ((_object as BufferGeometry).isBufferGeometry) {
 			const mesh = _attach as Mesh
 			const geometry = mesh.geometry
 			mesh.geometry = _object as BufferGeometry
@@ -27,8 +28,8 @@ export const useAttach = <Type>(
 				mesh.geometry = geometry
 			}
 
-			// If the attach target is a Mesh and the object is a Material...
-		} else if ((_attach as Mesh).isMesh && (_object as Material).isMaterial) {
+			// If the object is a Material...
+		} else if ((_object as Material).isMaterial) {
 			const mesh = _attach as Mesh
 			const material = mesh.material
 			mesh.material = _object as Material
@@ -42,9 +43,9 @@ export const useAttach = <Type>(
 
 			// If the attach target is a property key...
 		} else if (typeof _attach === 'string') {
-			const _parent = parent()
 			const prev = _parent[_attach]
 			_parent[_attach] = _object
+
 			return () => {
 				_parent[_attach] = prev
 			}

@@ -1,6 +1,20 @@
 import type { Snippet } from 'svelte'
 import type { Object3D } from 'three'
-import type { Primitive, ConditionalKeys } from 'type-fest'
+
+/** Inlined from type-fest */
+type ConditionalKeys<Base, Condition> = {
+	// Map through all the keys of the given base type.
+	[Key in keyof Base]-?: Base[Key] extends Condition // Pick only keys with types extending the given `Condition` type.
+		? // Retain this key since the condition passes.
+			Key
+		: // Discard this key since the condition fails.
+			never
+
+	// Convert the produced object into a union type of the keys which passed the conditional test.
+}[keyof Base]
+
+/** Inlined from type-fest */
+type Primitive = null | undefined | string | number | boolean | symbol | bigint
 
 /**
  * We hold a list of prop keys that should be omitted from the object props
@@ -20,7 +34,6 @@ export type OmittedPropKeys =
 	| 'name'
 
 export type AnyClass = new (...args: any) => any
-
 export type AnyFn = (...args: any) => any
 
 /**
@@ -32,25 +45,33 @@ export type MaybeInstance<Type> = Type extends AnyClass ? InstanceType<Type> : T
 // –––––––––––––––––––––––– PROPS ––––––––––––––––––––––––
 
 /**
+ * ### Any Props
+ *
  * Enables the use of arbitrary props.
  */
 export type AnyProps = Record<string, any>
 
-export type AttachFunction<Type> = (args: {
-	ref: MaybeInstance<Type>
-	parent: unknown
-	parentObject3D: Object3D
-}) => void | (() => void)
-
+/**
+ * ### Base Props
+ */
 export type BaseProps<Type, ChildrenArgs extends unknown[] = [{ ref: MaybeInstance<Type> }]> = {
 	/**
 	 * If true, the object will be deeply disposed when the component unmounts.
 	 */
 	dispose?: boolean
 
-	attach?: string | Object3D | AttachFunction<Type> | false | undefined
+	attach?:
+		| string
+		| Object3D
+		| ((args: {
+				ref: MaybeInstance<Type>
+				parent: unknown
+				parentObject3D: Object3D
+		  }) => void | (() => void))
+		| false
+		| undefined
 
-	children?: Snippet<[{ ref: MaybeInstance<Type> }]>
+	children?: Snippet<ChildrenArgs>
 
 	oncreate?: CreateEvent<MaybeInstance<Type>>
 }
@@ -166,7 +187,8 @@ export type Props<
 	ClassProps<Type> &
 	CameraProps<Type> &
 	InstanceProps<Type> &
-	EventProps<MaybeInstance<Type>>
+	EventProps<MaybeInstance<Type>> &
+	Threlte.UserProps
 
 /**
  * ### `TProps<Type>`

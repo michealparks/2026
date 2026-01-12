@@ -1,18 +1,18 @@
 export const VERSION = 9
 
 // canvas component
-export { default as Canvas } from './Canvas.svelte'
+export { default as Canvas } from './components/Canvas/Canvas.svelte'
 
 // components
-export { T, extend } from './components/T.js'
-export type { Props } from './util/types.js'
+export { T, extend } from './components/T/T.js'
+export type { Props } from './components/T/types.js'
 
 // plugins
-export { type Plugin, injectPlugin } from './hooks/plugin.svelte.js'
+export { type Plugin, injectPlugin } from './components/T/hooks/plugin.svelte.js'
 
 // hooks
 export { useThrelte } from './hooks/useThrelte.svelte.js'
-export { useParent } from './hooks/useParent.svelte.js'
+export { useParent, useParentObject3D } from './components/T/hooks/useParent.svelte.js'
 export { useTask, type UseTaskOptions } from './hooks/useTask.svelte.js'
 
 // useLoader
@@ -26,6 +26,8 @@ export {
 
 //contexts
 export { provideThrelte } from './hooks/useThrelte.svelte.js'
+export { provideScene, useScene } from './hooks/useScene.js'
+export { provideCamera, useCamera } from './hooks/useCamera.svelte.js'
 
 // utils
 export { observe } from './util/observe.svelte.js'

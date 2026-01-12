@@ -40,14 +40,13 @@ export type InteractivityContext = {
 	pointerOverTarget: { current: boolean }
 	lastEvent: DomEvent | undefined
 	raycaster: Raycaster
-	initialClick: [x: number, y: number]
+	initialClick: { x: number; y: number }
 	initialHits: Object3D[]
 	hovered: Map<string, IntersectionEvent<DomEvent>>
 	interactiveObjects: Object3D[]
-	handlers: WeakMap<Object3D, Events>
 	compute: ComputeFunction
 	filter?: FilterFunction | undefined
-	addInteractiveObject: (object: Object3D, events: Events) => void
+	addInteractiveObject: (object: Object3D) => void
 	removeInteractiveObject: (object: Object3D) => void
 }
 
@@ -59,7 +58,7 @@ export const getInteractivityContext = () => {
 
 export const setInteractivityContext = (options?: InteractivityOptions) => {
 	const { dom } = useThrelte()
-	const target = $state(options?.target ?? dom.current)
+	const target = $state(options?.target ?? dom)
 	const pointer = $state<{ x: number; y: number }>({ x: 0, y: 0 })
 
 	let enabled = $state(options?.enabled ?? true)
@@ -93,7 +92,7 @@ export const setInteractivityContext = (options?: InteractivityOptions) => {
 		},
 		lastEvent: undefined,
 		raycaster: new Raycaster(),
-		initialClick: [0, 0] as [number, number],
+		initialClick: { x: 0, y: 0 },
 		initialHits: [],
 		hovered: new Map(),
 		interactiveObjects: [],
@@ -102,22 +101,19 @@ export const setInteractivityContext = (options?: InteractivityOptions) => {
 				return target
 			},
 		},
-		handlers: new WeakMap(),
 		compute: options?.compute ?? getDefaultComputeFunction(() => target),
 		filter: options?.filter,
-		addInteractiveObject: (object: Object3D, events: Events) => {
+		addInteractiveObject: (object: Object3D) => {
 			// check if the object is already in the list
 			if (context.interactiveObjects.indexOf(object) > -1) {
 				return
 			}
 
-			context.handlers.set(object, events)
 			context.interactiveObjects.push(object)
 		},
 		removeInteractiveObject: (object: Object3D) => {
 			const index = context.interactiveObjects.indexOf(object)
 			context.interactiveObjects.splice(index, 1)
-			context.handlers.delete(object)
 		},
 	}
 

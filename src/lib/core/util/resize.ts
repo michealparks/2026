@@ -1,5 +1,4 @@
-import type { OrthographicCamera, PerspectiveCamera, WebGLRenderer } from 'three'
-import { updateCamera } from './updateCamera.js'
+import type { WebGLRenderer } from 'three'
 
 interface Size {
 	width: number
@@ -9,8 +8,7 @@ interface Size {
 export const resizeRendererToDisplaySize = (
 	domSize: Size,
 	canvasSize: Size,
-	renderer: WebGLRenderer,
-	cameras: Set<PerspectiveCamera | OrthographicCamera>
+	renderer: WebGLRenderer
 ) => {
 	const width = Math.floor(domSize.width)
 	const height = Math.floor(domSize.height)
@@ -18,10 +16,6 @@ export const resizeRendererToDisplaySize = (
 
 	if (needResize) {
 		renderer.setSize(width, height, true)
-
-		for (const camera of cameras) {
-			updateCamera(camera, width, height)
-		}
 
 		return true
 	}

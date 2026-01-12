@@ -1,7 +1,7 @@
 import type { EventDispatcher } from 'three'
 import { untrack } from 'svelte'
-import type { MaybeInstance } from '../util/types.js'
-import { useThrelte } from './useThrelte.svelte.js'
+import type { MaybeInstance } from '../types.js'
+import { useThrelte } from '../../../hooks/useThrelte.svelte.js'
 
 export const useProps = <Type>(
 	object: () => MaybeInstance<Type>,
@@ -60,7 +60,7 @@ export const useProps = <Type>(
 							dispatcher.removeEventListener(eventName, value)
 						}
 					}
-					0
+
 					if (typeof prop === 'object') {
 						if (Array.isArray(value) && 'fromArray' in prop) {
 							prop.fromArray(value)
@@ -75,7 +75,9 @@ export const useProps = <Type>(
 					}
 
 					if (typeof prop === 'function') {
-						if (Array.isArray(value)) {
+						if (typeof value === 'function') {
+							obj[key] = value
+						} else if (Array.isArray(value)) {
 							prop.call(_object, ...value)
 						} else {
 							prop.call(_object, value)

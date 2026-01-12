@@ -13,6 +13,7 @@ const interactivity = (options?: InteractivityOptions) => {
 
 // exports
 export { useInteractivity } from './context.svelte.js'
+
 export type {
 	DomEvent,
 	Intersection,
@@ -20,4 +21,5 @@ export type {
 	ThrelteEvents as EventMap,
 	InteractivityProps,
 } from './types.js'
+
 export { interactivity }

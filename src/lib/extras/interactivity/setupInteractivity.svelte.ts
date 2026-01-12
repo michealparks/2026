@@ -1,6 +1,7 @@
 import type * as THREE from 'three'
-import { type InteractivityContext, useInteractivity } from './context.svelte.js'
+import type { InteractivityContext } from './context.svelte.js'
 import type { DomEvent, Intersection, IntersectionEvent } from './types.js'
+import type { Object3D } from 'three'
 
 function createIntersectionId(intersection: Intersection) {
 	return `${(intersection.eventObject || intersection.object).uuid}|${intersection.index}|${intersection.instanceId}`
@@ -19,17 +20,22 @@ const DOM_EVENTS = [
 	['pointercancel', true],
 ] as const
 
+const hasEventHandler = (object: Object3D, name: string) => {
+	return (object as { _listeners?: Record<string, unknown> })._listeners?.[name] !== undefined
+}
+
 export const setupInteractivity = (context: InteractivityContext) => {
-	const { handlers } = useInteractivity()
+	const { interactiveObjects, enabled, initialClick, hovered, raycaster, pointerOverTarget } =
+		context
 
 	const calculateDistance = (event: DomEvent) => {
-		const dx = event.offsetX - context.initialClick[0]
-		const dy = event.offsetY - context.initialClick[1]
+		const dx = event.offsetX - initialClick.x
+		const dy = event.offsetY - initialClick.y
 		return Math.round(Math.hypot(dx, dy))
 	}
 
 	const cancelPointer = (intersections: Intersection[]) => {
-		if (context.hovered.size === 0) {
+		if (hovered.size === 0) {
 			return
 		}
 
@@ -38,28 +44,28 @@ export const setupInteractivity = (context: InteractivityContext) => {
 			hitIds.add(createIntersectionId(intersection))
 		}
 
-		for (const [id, hoveredObj] of context.hovered) {
+		for (const [id, intersection] of hovered) {
 			// When no objects were hit or the the hovered object wasn't found underneath the cursor
 			// we call pointerout and delete the object from the hovered elements map
 			if (!hitIds.has(id)) {
-				const { eventObject } = hoveredObj
-				context.hovered.delete(id)
-				const events = handlers.get(eventObject)
-				if (events) {
-					// Clear out intersects, they are outdated by now
-					const data = { ...hoveredObj, intersections }
-					events.onpointerout?.(data as IntersectionEvent<PointerEvent>)
-					events.onpointerleave?.(data as IntersectionEvent<PointerEvent>)
+				const { eventObject } = intersection
+
+				hovered.delete(id)
+
+				if (hasEventHandler(eventObject, 'pointerout')) {
+					eventObject.dispatchEvent({ type: 'pointerout', ...intersection, intersections })
+				}
+
+				if (hasEventHandler(eventObject, 'pointerleave')) {
+					eventObject.dispatchEvent({ type: 'pointerleave', ...intersection, intersections })
 				}
 			}
 		}
 	}
 
 	const getHits = (): Intersection[] => {
-		if (!context.enabled.current) return []
-
 		const intersections: Intersection[] = []
-		const hits = context.raycaster.intersectObjects(context.interactiveObjects, true)
+		const hits = raycaster.intersectObjects(interactiveObjects, true)
 		const filtered = context.filter === undefined ? hits : context.filter(hits, context)
 
 		// Bubble up the events, find the event source (eventObject)
@@ -67,7 +73,10 @@ export const setupInteractivity = (context: InteractivityContext) => {
 			let eventObject: THREE.Object3D | null = hit.object
 			// Bubble event up
 			while (eventObject) {
-				if (handlers.has(eventObject)) intersections.push({ ...hit, eventObject })
+				if (interactiveObjects.includes(eventObject)) {
+					intersections.push({ ...hit, eventObject })
+				}
+
 				eventObject = eventObject.parent
 			}
 		}
@@ -77,17 +86,19 @@ export const setupInteractivity = (context: InteractivityContext) => {
 
 	const pointerMissed = (event: MouseEvent, objects: THREE.Object3D[]) => {
 		for (const object of objects) {
-			handlers.get(object)?.onpointermissed?.(event)
+			if (hasEventHandler(object, 'pointermissed')) {
+				object.dispatchEvent(event)
+			}
 		}
 	}
 
 	const handlePointerLeaveOrCancel = () => {
-		context.pointerOverTarget.current = false
+		pointerOverTarget.current = false
 		cancelPointer([])
 	}
 
 	const handlePointerEnter = () => {
-		context.pointerOverTarget.current = true
+		pointerOverTarget.current = true
 	}
 
 	const handleEvent = (event: DomEvent) => {
@@ -106,7 +117,8 @@ export const setupInteractivity = (context: InteractivityContext) => {
 
 		// Save initial coordinates on pointer-down
 		if (name === 'pointerdown') {
-			context.initialClick = [event.offsetX, event.offsetY]
+			context.initialClick.x = event.offsetX
+			context.initialClick.y = event.offsetY
 			context.initialHits = hits.map((hit) => hit.eventObject)
 		}
 
@@ -119,16 +131,14 @@ export const setupInteractivity = (context: InteractivityContext) => {
 		}
 
 		// Take care of unhover
-		if (isPointerMove) cancelPointer(hits)
+		if (isPointerMove) {
+			cancelPointer(hits)
+		}
 
 		let stopped = false
 
 		// loop through all hits and dispatch events
 		dispatchEvents: for (const hit of hits) {
-			const events = handlers.get(hit.eventObject)
-
-			if (!events) continue
-
 			const intersectionEvent: IntersectionEvent<DomEvent> = {
 				stopped,
 				...hit,
@@ -156,18 +166,18 @@ export const setupInteractivity = (context: InteractivityContext) => {
 				// Move event ...
 
 				if (
-					events.onpointerover ||
-					events.onpointerenter ||
-					events.onpointerout ||
-					events.onpointerleave
+					hasEventHandler(hit.eventObject, 'pointerover') ||
+					hasEventHandler(hit.eventObject, 'pointerenter') ||
+					hasEventHandler(hit.eventObject, 'pointerout') ||
+					hasEventHandler(hit.eventObject, 'pointerleave')
 				) {
 					const id = createIntersectionId(intersectionEvent)
 					const hoveredItem = context.hovered.get(id)
 					if (!hoveredItem) {
 						// If the object wasn't previously hovered, book it and call its handler
 						context.hovered.set(id, intersectionEvent)
-						events.onpointerover?.(intersectionEvent as IntersectionEvent<PointerEvent>)
-						events.onpointerenter?.(intersectionEvent as IntersectionEvent<PointerEvent>)
+						hit.eventObject.dispatchEvent({ type: 'pointerover', ...intersectionEvent })
+						hit.eventObject.dispatchEvent({ type: 'pointerenter', ...intersectionEvent })
 					} else if (hoveredItem.stopped) {
 						// If the object was previously hovered and stopped, we shouldn't allow other items to proceed
 						intersectionEvent.stopPropagation()
@@ -175,10 +185,10 @@ export const setupInteractivity = (context: InteractivityContext) => {
 				}
 
 				// Call pointer move
-				events.onpointermove?.(intersectionEvent as IntersectionEvent<PointerEvent>)
+				hit.eventObject.dispatchEvent({ type: 'pointermove', ...intersectionEvent })
 			} else {
 				// All other events
-				if (events[`on${name}`]) {
+				if (hasEventHandler(hit.eventObject, name)) {
 					if (!isClickEvent || context.initialHits.includes(hit.eventObject)) {
 						// Missed events have to come first
 						pointerMissed(
@@ -187,7 +197,7 @@ export const setupInteractivity = (context: InteractivityContext) => {
 						)
 
 						// Call the event
-						events[`on${name}`]?.(intersectionEvent)
+						hit.eventObject.dispatchEvent({ type: name, ...intersectionEvent })
 					}
 				} else {
 					// "Real" click event
@@ -265,9 +275,12 @@ export const setupInteractivity = (context: InteractivityContext) => {
 
 	$effect(() => {
 		const element = context.target.current
+
 		if (!element) return
+		if (!enabled.current) return
 
 		connect(element)
+
 		return () => {
 			disconnect(element)
 		}

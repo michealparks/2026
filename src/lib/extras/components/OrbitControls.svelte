@@ -10,7 +10,7 @@
 	const { camera, invalidate, shouldRender, dom } = useThrelte()
 
 	// <HTML> sets canvas pointer-events to "none" if occluding, so events must be placed on the canvas parent.
-	const controls = new OrbitControls(camera.current, dom.current)
+	const controls = new OrbitControls(camera.current, dom)
 
 	useTask(
 		() => {

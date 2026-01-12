@@ -129,10 +129,6 @@ Calling functions through props is now supported as well:
 
 Searching for camera props and updating projection matrices have been moved to the `useManagedCamera` hook, so that this is only done if an object is a camera.
 
-### `useParentObject3d`
-
-This hook has been removed. All use cases were examined and found to be unnecessary and replacable by useParent.
-
 ### `useDispose`
 
 Disposal is now no longer scheduled for the next frame. Instead, it is done immediately after the component is unmounted.

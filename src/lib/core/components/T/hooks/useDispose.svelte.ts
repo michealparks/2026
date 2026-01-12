@@ -1,5 +1,5 @@
 import { getContext, setContext } from 'svelte'
-import type { MaybeInstance } from '../util/types.js'
+import type { MaybeInstance } from '../types.js'
 
 type DisposableObject<Type> = MaybeInstance<Type> & {
 	dispose: () => void

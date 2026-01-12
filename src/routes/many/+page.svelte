@@ -11,8 +11,13 @@
 
 <T.PerspectiveCamera
 	makeDefault
-	position={[10, 10, 10]}
-	lookAt={[0, -5, 0]}
+	position={[20, 20, 20]}
+	lookAt={[0, -10, 0]}
+></T.PerspectiveCamera>
+
+<OrbitControls
+	enableDamping
+	target={[0, -10, 0]}
 />
 
 <T.DirectionalLight position={[-5, 5, 5]}>
@@ -26,10 +31,8 @@
 
 <T.AmbientLight />
 
-<OrbitControls />
-
-{#each { length: 20 }, x}
-	{#each { length: 20 }, z}
+{#each { length: 30 }, x}
+	{#each { length: 30 }, z}
 		{@const mesh = new Mesh()}
 		{@const scale = new Spring(1)}
 		{@const color = new Spring<[number, number, number]>([0.5, 0.5, 0])}

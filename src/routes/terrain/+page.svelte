@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { T, useThrelte } from '$lib/core'
 	import { OrbitControls } from '$lib/extras'
-	import { useHDR } from '$lib/extras/useHDR.svelte'
+	import { useHDR } from '$lib/extras'
 	import Cube from './Cube.svelte'
 	import { shaderChunk } from './shaderChunk'
 	import Terrain from './Terrain/Terrain.svelte'

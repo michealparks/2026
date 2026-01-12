@@ -14,7 +14,7 @@ const key = Symbol('size-context')
 export const provideSize = (size: () => Size) => {
 	const context: SizeContext = {
 		get current() {
-			return size()
+			return size() as Size
 		},
 	}
 

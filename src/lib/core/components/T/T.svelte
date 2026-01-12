@@ -2,18 +2,17 @@
 	lang="ts"
 	generics="Type"
 >
-	import type { PerspectiveCamera, OrthographicCamera } from 'three'
 	import { untrack } from 'svelte'
-	import type { TProps } from '../util/types.js'
-	import { resolveIs } from '../util/resolveIs.js'
-	import { useIs } from '../hooks/useIs.svelte.js'
-	import { provideParent, useParent } from '../hooks/useParent.svelte.js'
-	import { useAttach } from '../hooks/useAttach.svelte.js'
-	import { useProps } from '../hooks/useProps.svelte.js'
-	import { provideDispose, useDispose } from '../hooks/useDispose.svelte.js'
-	import { useManageCamera } from '../hooks/useCamera.svelte.js'
-	import { getPlugins, usePlugins } from '../hooks/plugin.svelte.js'
-	import { useScene } from '../hooks/useScene.js'
+	import type { PerspectiveCamera, OrthographicCamera } from 'three'
+	import type { TProps } from './types.js'
+	import { useIs, resolveIs } from './hooks/useIs.svelte.js'
+	import { provideParent, useParent } from './hooks/useParent.svelte.js'
+	import { useAttach } from './hooks/useAttach.svelte.js'
+	import { useProps } from './hooks/useProps.svelte.js'
+	import { provideDispose, useDispose } from './hooks/useDispose.svelte.js'
+	import { getPlugins, usePlugins } from './hooks/plugin.svelte.js'
+	import { useScene } from '../../hooks/useScene.js'
+	import { useManageCamera } from '../../hooks/useCamera.svelte.js'
 
 	let {
 		is = useIs<Type>(),
@@ -31,7 +30,8 @@
 	const scene = useScene()
 	const parent = useParent<Type>()
 	const object = $derived(resolveIs<Type>(is, args))
-	const resolvedAttach = $derived(attach ?? parent?.current ?? scene)
+	const resolvedParent = $derived(parent?.current ?? scene)
+	const resolvedAttach = $derived(attach ?? resolvedParent)
 
 	const plugins = getPlugins()
 	const pluginProps = plugins
@@ -67,9 +67,14 @@
 
 	useAttach(
 		() => object,
-		() => parent.current,
+		() => resolvedParent,
 		() => resolvedAttach
 	)
+
+	provideParent(() => object, scene)
+	provideDispose(() => dispose)
+
+	useDispose(() => object)
 
 	$effect.pre(() => {
 		if (
@@ -84,11 +89,6 @@
 			)
 		}
 	})
-
-	provideParent(() => object)
-	provideDispose(() => dispose)
-
-	useDispose(() => object)
 
 	$effect.pre(() => {
 		object
