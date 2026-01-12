@@ -64,7 +64,7 @@ The properties removed above have also been removed from the canvas component.
 
 The canvas component also now always creates the renderer passed to `useRenderer`, which will make it easier to create a WebGL and WebGPU canvas component.
 
-Resizing also no longer is in a callback from a ResizeObserver, but is now rather tested on each frame from cached ResizeObserver values. This is more stable and solves the jittering issue noticed when resizing the canvas, since that is caused by calling `renderer.setSize()` multiple times per frame.
+Resizing has been fixed in that it's no longer called mutliple times per frame, causing jitteriness.
 
 ## utilities
 
