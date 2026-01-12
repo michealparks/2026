@@ -2,9 +2,11 @@ This is an experimental prototype of a possible future version of Threlte.
 
 The library itself can be found at [src/lib/core](https://github.com/michealparks/2026/tree/main/src/lib/core).
 
-The result of this experiment was discovering that there was a lot of possible downsizing, simplification, and redundancy removal.
+The result of this experiment was discovering that there was some possible downsizing, simplification, and redundancy removal.
 
-Also, a lot less work can still be done by the library while achieving the same results.
+Also, less work can still be done by the library while achieving the same results.
+
+I also wanted to see what an entirely runes-based version of Threlte would look like.
 
 Finally, I think there are some areas where API ergonomics can be improved.
 
@@ -115,7 +117,9 @@ Memoization has been completely removed since it did not provide any significant
 
 `useEvents` has been removed because this hook now calls `addEventListener` and `removeEventListener` when prop values are functions and keys start with 'on'.
 
-This also means that `interactivity` can now fire THREE events through `dispatchEvent` since these props are registered as EventDispatcher events.
+`interactivity` now fires THREE events through `dispatchEvent` since these props are registered as EventDispatcher events.
+
+This helps with complex interactivity situations that emerge with extras like `<RenderTexture>`
 
 Calling functions through props is now supported as well:
 
@@ -135,4 +139,4 @@ Disposal is now no longer scheduled for the next frame. Instead, it is done imme
 
 ### Scheduling
 
-I used the `directed` library under the hood for scheduling tasks to quickly prototype without importing Threlte's scheduling library. I sort of like the API more than Threlte's. It's a bit simpler, but changing it may be too much of a shock.
+I used the `directed` library under the hood for scheduling tasks to quickly prototype without importing Threlte's scheduling library. I sort of like the API more than Threlte's. It's a bit simpler, but changing it may be too much of a big change and others may not agree.
